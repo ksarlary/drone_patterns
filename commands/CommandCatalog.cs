@@ -2,6 +2,12 @@ namespace DronePatterns.Commands;
 
 public class CommandCatalog
 {
+    private readonly StocksCommand stocksCommand = new();
+    private readonly VerifyCommand verifyCommand = new();
+    private readonly ProduceCommand produceCommand = new();
+    private readonly NeededStocksCommand neededStocksCommand = new();
+    private readonly InstructionsCommand instructionsCommand = new();
+    
     private readonly HashSet<string> availableCommands = new()
     {
         "STOCKS",
@@ -13,7 +19,9 @@ public class CommandCatalog
 
     public string Evaluate(string userInput)
     {
+        string trimmedInput = userInput.Trim();
         string commandName = ExtractCommandName(userInput);
+        string arguments = ExtractArguments(trimmedInput);
         string feedback = $"";
 
         if (availableCommands.Contains(commandName))
@@ -21,20 +29,15 @@ public class CommandCatalog
             switch(commandName)
             {
                 case "STOCKS":
-                    feedback += $"1 Drone1\n2 Drone2";
-                    return feedback;
+                    return stocksCommand.Execute(arguments);
                 case "NEEDED_STOCKS":
-                    feedback += $"1 Drone1 :\n1 Piece1\n2 Piece2\n2 Drone2 :\n2 Piece1\n4 Piece2";
-                    return feedback;
+                    return neededStocksCommand.Execute(arguments);
                 case "INSTRUCTIONS":
-                    feedback += $"PRODUCING Drone1\nASSEMBLY Drone1\nFINISHED Drone1";
-                    return feedback;
+                    return instructionsCommand.Execute(arguments);
                 case "VERIFY":
-                    feedback += $"AVAILABLE";
-                    return feedback;
+                    return verifyCommand.Execute(arguments);
                 case "PRODUCE":
-                    feedback += $"STOCK_UPDATED";
-                    return feedback;
+                    return produceCommand.Execute(arguments);
             }
         }
 
@@ -48,5 +51,17 @@ public class CommandCatalog
         string[] parts = trimmedInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         return parts[0].ToUpper();
+    }
+    
+    private string ExtractArguments(string input)
+    {
+        string[] parts = input.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length < 2)
+        {
+            return "";
+        }
+
+        return parts[1].Trim();
     }
 }

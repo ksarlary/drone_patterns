@@ -18,7 +18,7 @@ public static class ConsoleHelper
 
     public static void WriteInfo(string message)
     {
-        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.ForegroundColor = ConsoleColor.Magenta;
         Console.WriteLine(message);
         Console.ResetColor();
     }
