@@ -34,7 +34,11 @@ class Program
             
             if (feedback.StartsWith("ERROR"))
             {
-                ConsoleHelper.WriteError(feedback);
+                ConsoleErrorHandler.WriteError(feedback);
+            }
+            else if (feedback == "UNAVAILABLE")
+            {
+                ConsoleHelper.WriteWarning(feedback);
             }
             else
             {

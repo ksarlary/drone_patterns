@@ -7,7 +7,7 @@
   },
   "Pieces": {
     "Hull_HG1": 10,
-    "Hull_HF1": 0,
+    "Hull_HF1": 10,
     "Hull_HS1": 10,
 
     "Core_CG1": 10,
