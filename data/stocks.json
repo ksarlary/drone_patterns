@@ -1,0 +1,31 @@
+{
+  "Drones": {
+    "DXF-1": 0,
+    "RDL-1": 0,
+    "WDS-1": 0,
+    "DYM-1": 0
+  },
+  "Pieces": {
+    "Hull_HG1": 10,
+    "Hull_HF1": 10,
+    "Hull_HS1": 10,
+
+    "Core_CG1": 10,
+    "Core_C3D1": 10,
+
+    "Generator_GG1": 10,
+    "Generator_GF1": 10,
+    "Generator_GS1": 10,
+
+    "Move_MF1": 10,
+    "Move_ML1": 10,
+    "Move_MS1": 10,
+    "Move_MM1": 10,
+    "Move_MU1": 10,
+    "Move_MS2": 10,
+
+    "Processor_PG1": 10,
+    "Processor_P3D1": 10,
+    "Processor_PU1": 10
+  }
+}
