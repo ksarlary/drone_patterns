@@ -22,7 +22,6 @@ public class CommandCatalog
         string trimmedInput = userInput.Trim();
         string commandName = ExtractCommandName(userInput);
         string arguments = ExtractArguments(trimmedInput);
-        string feedback = $"";
 
         if (availableCommands.Contains(commandName))
         {
