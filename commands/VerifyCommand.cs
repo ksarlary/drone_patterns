@@ -4,7 +4,7 @@ namespace DronePatterns.Commands;
 
 public class VerifyCommand
 {
-    private readonly string _stockFilePath = "Data/stocks.json";
+    private readonly string stockFilePath = "data/stocks.json";
     private readonly NeededStocksCommand neededStocksCommand = new();
 
     public string Execute(string arguments)
@@ -53,12 +53,12 @@ public class VerifyCommand
 
     private StockData? LoadStock()
     {
-        if (!File.Exists(_stockFilePath))
+        if (!File.Exists(stockFilePath))
         {
             return null;
         }
 
-        string json = File.ReadAllText(_stockFilePath);
+        string json = File.ReadAllText(stockFilePath);
 
         return JsonSerializer.Deserialize<StockData>(json);
     }

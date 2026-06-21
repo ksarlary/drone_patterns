@@ -217,7 +217,6 @@ public class NeededStocksCommand
 
         AddNeededItem(neededStock, drone.Hull, quantity);
         AddNeededItem(neededStock, drone.Core, quantity);
-        AddNeededItem(neededStock, drone.System, quantity);
         AddNeededItem(neededStock, drone.Generator, quantity);
         AddNeededItem(neededStock, drone.Move, quantity);
         AddNeededItem(neededStock, drone.Processor, quantity);
@@ -239,20 +238,7 @@ public class NeededStocksCommand
 
     private class DroneCatalogData
     {
-        public Dictionary<string, PieceDefinition> Pieces { get; set; } = new();
-        public Dictionary<string, SystemDefinition> Systems { get; set; } = new();
         public Dictionary<string, DroneDefinition> Drones { get; set; } = new();
-    }
-
-    private class PieceDefinition
-    {
-        public string Kind { get; set; } = "";
-        public List<string> Tags { get; set; } = new();
-    }
-
-    private class SystemDefinition
-    {
-        public List<string> Tags { get; set; } = new();
     }
 
     private class DroneDefinition

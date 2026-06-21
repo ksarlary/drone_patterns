@@ -7,7 +7,7 @@
   },
   "Pieces": {
     "Hull_HG1": 10,
-    "Hull_HF1": 10,
+    "Hull_HF1": 0,
     "Hull_HS1": 10,
 
     "Core_CG1": 10,
@@ -26,9 +26,6 @@
 
     "Processor_PG1": 10,
     "Processor_P3D1": 10,
-    "Processor_PU1": 10,
-
-    "System_SG1": 10,
-    "System_S3D1": 10
+    "Processor_PU1": 10
   }
 }
