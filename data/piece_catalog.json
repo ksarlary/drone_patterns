@@ -1,0 +1,85 @@
+{
+  "Pieces": {
+    "Hull_HG1": {
+      "Family": "Hull",
+      "Tags": [ "S" ]
+    },
+    "Hull_HF1": {
+      "Family": "Hull",
+      "Tags": []
+    },
+    "Hull_HS1": {
+      "Family": "Hull",
+      "Tags": [ "S" ]
+    },
+
+    "Core_CG1": {
+      "Family": "Core",
+      "Tags": [ "2D" ]
+    },
+    "Core_C3D1": {
+      "Family": "Core",
+      "Tags": [ "2D", "3D" ]
+    },
+
+    "Generator_GG1": {
+      "Family": "Generator",
+      "Tags": []
+    },
+    "Generator_GF1": {
+      "Family": "Generator",
+      "Tags": []
+    },
+    "Generator_GS1": {
+      "Family": "Generator",
+      "Tags": [ "S" ]
+    },
+
+    "Move_MF1": {
+      "Family": "Move",
+      "Tags": [ "F" ]
+    },
+    "Move_ML1": {
+      "Family": "Move",
+      "Tags": [ "L" ]
+    },
+    "Move_MS1": {
+      "Family": "Move",
+      "Tags": [ "S" ]
+    },
+    "Move_MM1": {
+      "Family": "Move",
+      "Tags": [ "M" ]
+    },
+    "Move_MU1": {
+      "Family": "Move",
+      "Tags": [ "M", "L" ]
+    },
+    "Move_MS2": {
+      "Family": "Move",
+      "Tags": [ "M", "S" ]
+    },
+
+    "Processor_PG1": {
+      "Family": "Processor",
+      "Tags": [ "2D" ]
+    },
+    "Processor_P3D1": {
+      "Family": "Processor",
+      "Tags": [ "3D" ]
+    },
+    "Processor_PU1": {
+      "Family": "Processor",
+      "Tags": [ "2D", "3D" ]
+    },
+
+    "System_SG1": {
+      "Family": "System",
+      "Tags": [ "2D" ]
+    },
+    "System_S3D1": {
+      "Family": "System",
+      "Tags": [ "2D", "3D" ]
+    }
+  }
+}
