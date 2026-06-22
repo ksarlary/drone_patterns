@@ -36,6 +36,8 @@ public class NeededStocksCommand : ICommand
             return validationError;
         }
 
+        Dictionary<string, int> totalNeededStock = CalculateNeededStock(order, catalog);
+
         List<string> lines = new();
 
         foreach (var orderItem in order)
@@ -55,6 +57,13 @@ public class NeededStocksCommand : ICommand
             {
                 lines.Add($"{neededItem.Value} {neededItem.Key}");
             }
+        }
+
+        lines.Add("Total:");
+
+        foreach (var neededItem in totalNeededStock)
+        {
+            lines.Add($"{neededItem.Value} {neededItem.Key}");
         }
 
         return string.Join(Environment.NewLine, lines);
