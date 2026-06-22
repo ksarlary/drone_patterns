@@ -2,8 +2,10 @@ using System.Text.Json;
 
 namespace DronePatterns.Commands;
 
-public class NeededStocksCommand
+public class NeededStocksCommand : ICommand 
+
 {
+    public string Name => "NEEDED_STOCKS";
     private readonly string catalogFilePath = "Data/drone_catalog.json";
 
     public string Execute(string arguments)

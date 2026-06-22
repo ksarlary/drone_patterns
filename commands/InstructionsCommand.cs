@@ -3,8 +3,10 @@ using DronePatterns.Commands.internal_commands;
 
 namespace DronePatterns.Commands;
 
-public class InstructionsCommand
+public class InstructionsCommand : ICommand
 {
+
+    public string Name => "INSTRUCTIONS";
     private readonly string _catalogFilePath = "data/drone_catalog.json";
 
     private readonly GetOutStockCommand getOutStockCommand = new();

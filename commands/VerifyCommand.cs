@@ -2,8 +2,10 @@ using System.Text.Json;
 
 namespace DronePatterns.Commands;
 
-public class VerifyCommand
+public class VerifyCommand : ICommand
 {
+    public string Name => "VERIFY";
+
     private readonly string stockFilePath = "data/stocks.json";
     private readonly NeededStocksCommand neededStocksCommand = new();
 

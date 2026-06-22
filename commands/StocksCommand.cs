@@ -2,8 +2,10 @@ using System.Text.Json;
 
 namespace DronePatterns.Commands;
 
-public class StocksCommand
+public class StocksCommand : ICommand
 {
+    public string Name => "STOCKS";
+
     private readonly string stockFilePath = "Data/stocks.json";
 
     public string Execute(string arguments)
@@ -52,4 +54,6 @@ public class StocksCommand
         public Dictionary<string, int> Drones { get; set; } = new();
         public Dictionary<string, int> Pieces { get; set; } = new();
     }
+
+
 }

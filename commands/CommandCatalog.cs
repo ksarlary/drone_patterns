@@ -2,52 +2,45 @@ namespace DronePatterns.Commands;
 
 public class CommandCatalog
 {
-    private readonly StocksCommand stocksCommand = new();
-    private readonly VerifyCommand verifyCommand = new();
-    private readonly ProduceCommand produceCommand = new();
-    private readonly NeededStocksCommand neededStocksCommand = new();
-    private readonly InstructionsCommand instructionsCommand = new();
-    
-    private readonly HashSet<string> availableCommands = new()
+    private readonly Dictionary<string, ICommand> commands;
+
+    public CommandCatalog()
     {
-        "STOCKS",
-        "NEEDED_STOCKS",
-        "INSTRUCTIONS",
-        "VERIFY",
-        "PRODUCE"
-    };
+        List<ICommand> commandList = new()
+        {
+            new StocksCommand(),
+            new NeededStocksCommand(),
+            new InstructionsCommand(),
+            new VerifyCommand(),
+            new ProduceCommand()
+        };
+
+        commands = commandList.ToDictionary(
+            command => command.Name,
+            command => command
+        );
+    }
+
+
 
     public string Evaluate(string userInput)
     {
+      
         string trimmedInput = userInput.Trim();
-        string commandName = ExtractCommandName(userInput);
+        string commandName = ExtractCommandName(trimmedInput);
         string arguments = ExtractArguments(trimmedInput);
 
-        if (availableCommands.Contains(commandName))
+        if (!commands.ContainsKey(commandName))
         {
-            switch(commandName)
-            {
-                case "STOCKS":
-                    return stocksCommand.Execute(arguments);
-                case "NEEDED_STOCKS":
-                    return neededStocksCommand.Execute(arguments);
-                case "INSTRUCTIONS":
-                    return instructionsCommand.Execute(arguments);
-                case "VERIFY":
-                    return verifyCommand.Execute(arguments);
-                case "PRODUCE":
-                    return produceCommand.Execute(arguments);
-            }
+            return $"ERROR Unknown command: {commandName}";
         }
-
-        return $"ERROR Unknown command: {commandName}";
+        return commands[commandName].Execute(arguments);
     }
 
     private string ExtractCommandName(string userInput)
     {
-        string trimmedInput = userInput.Trim();
 
-        string[] parts = trimmedInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        string[] parts = userInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         return parts[0].ToUpper();
     }
