@@ -9,6 +9,9 @@ public class AddTemplateCommand : ICommand
 	public string Name => "ADD_TEMPLATE";
 
 	private readonly string pieceCatalogFilePath = "data/piece_catalog.json";
+	private readonly string droneCatalogFilePath = "data/drone_catalog.json";
+	private readonly string stockFilePath = "data/stocks.json";
+
 	private readonly DroneCategoryService droneCategoryService = new();
 
 	public string Execute(string arguments)
@@ -75,8 +78,33 @@ public class AddTemplateCommand : ICommand
 			return "ERROR Invalid drone category";
 		}
 
-        return $"TEMPLATE_VALID {templateName}";
-    }
+		DroneCatalogData? droneCatalog = LoadDroneCatalog();
+
+		if (droneCatalog == null)
+		{
+			return "ERROR Unable to read drone catalog";
+		}
+
+		if (droneCatalog.Drones.ContainsKey(templateName))
+		{
+			return $"ERROR `{templateName}` already exists";
+		}
+
+		StockData? stock = LoadStock();
+
+		if (stock == null)
+		{
+			return "ERROR Unable to read stock data";
+		}
+
+		AddDroneToCatalog(droneCatalog, drone);
+		AddDroneToStock(stock, templateName);
+
+		SaveDroneCatalog(droneCatalog);
+		SaveStock(stock);
+
+		return $"TEMPLATE_ADDED {templateName}";
+	}
 
 	private PieceCatalogData? LoadPieceCatalog()
 	{
@@ -90,7 +118,55 @@ public class AddTemplateCommand : ICommand
 		return JsonSerializer.Deserialize<PieceCatalogData>(json);
 	}
 
-	private DroneTemplate? BuildDroneTemplate(
+	private DroneCatalogData? LoadDroneCatalog()
+	{
+		if (!File.Exists(droneCatalogFilePath))
+		{
+			return null;
+		}
+
+		string json = File.ReadAllText(droneCatalogFilePath);
+
+		return JsonSerializer.Deserialize<DroneCatalogData>(json);
+	}
+
+	private StockData? LoadStock()
+	{
+		if (!File.Exists(stockFilePath))
+		{
+			return null;
+		}
+
+		string json = File.ReadAllText(stockFilePath);
+
+		return JsonSerializer.Deserialize<StockData>(json);
+	}
+
+    private void SaveDroneCatalog(DroneCatalogData droneCatalog)
+    {
+        JsonSerializerOptions options = new()
+        {
+            WriteIndented = true
+        };
+
+        string json = JsonSerializer.Serialize(droneCatalog, options);
+
+        File.WriteAllText(droneCatalogFilePath, json);
+    }
+
+    private void SaveStock(StockData stock)
+    {
+        JsonSerializerOptions options = new()
+        {
+            WriteIndented = true
+        };
+
+        string json = JsonSerializer.Serialize(stock, options);
+
+        File.WriteAllText(stockFilePath, json);
+    }
+
+    private DroneTemplate? BuildDroneTemplate(
 		string templateName,
 		List<string> pieceNames,
 		Dictionary<string, PieceDefinition> pieces
@@ -140,8 +216,53 @@ public class AddTemplateCommand : ICommand
 		};
 	}
 
+	private void AddDroneToCatalog(DroneCatalogData droneCatalog, DroneTemplate drone)
+	{
+		droneCatalog.Drones.Add(
+			drone.Name,
+			new DroneDefinition
+			{
+				Hull = drone.Hull,
+				Core = drone.Core,
+				System = drone.System,
+				Generator = drone.Generator,
+				Move = drone.Move,
+				Processor = drone.Processor
+			}
+		);
+	}
+
+	private void AddDroneToStock(StockData stock, string templateName)
+	{
+		if (!stock.Drones.ContainsKey(templateName))
+		{
+			stock.Drones.Add(templateName, 0);
+		}
+	}
+
 	private class PieceCatalogData
 	{
 		public Dictionary<string, PieceDefinition> Pieces { get; set; } = new();
+	}
+
+	private class DroneCatalogData
+	{
+		public Dictionary<string, DroneDefinition> Drones { get; set; } = new();
+	}
+
+	private class DroneDefinition
+	{
+		public string Hull { get; set; } = "";
+		public string Core { get; set; } = "";
+		public string System { get; set; } = "";
+		public string Generator { get; set; } = "";
+		public string Move { get; set; } = "";
+		public string Processor { get; set; } = "";
+	}
+
+	private class StockData
+	{
+		public Dictionary<string, int> Drones { get; set; } = new();
+		public Dictionary<string, int> Pieces { get; set; } = new();
 	}
 }
