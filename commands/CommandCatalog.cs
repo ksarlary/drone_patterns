@@ -12,7 +12,8 @@ public class CommandCatalog
             new NeededStocksCommand(),
             new InstructionsCommand(),
             new VerifyCommand(),
-            new ProduceCommand()
+            new ProduceCommand(),
+            new AddTemplateCommand()
         };
 
         commands = commandList.ToDictionary(
