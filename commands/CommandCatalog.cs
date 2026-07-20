@@ -14,7 +14,11 @@ public class CommandCatalog
             new VerifyCommand(),
             new ProduceCommand(),
             new AddTemplateCommand(),
-            new ReceiveCommand()
+            new ReceiveCommand(),
+            new GetMovementsCommand(),
+            new OrderCommand(),
+            new SendCommand(),
+            new ListOrderCommand()
         };
 
         commands = commandList.ToDictionary(

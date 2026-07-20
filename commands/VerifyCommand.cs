@@ -1,6 +1,5 @@
-using System.Text.Json;
-using DronePatterns.Utils;
 using DronePatterns.Models;
+using DronePatterns.Services;
 
 namespace DronePatterns.Commands;
 
@@ -8,8 +7,11 @@ public class VerifyCommand : ICommand
 {
     public string Name => "VERIFY";
 
-    private readonly string stockFilePath = DataPaths.Stocks;
-    private readonly NeededStocksCommand neededStocksCommand = new();
+    private readonly NeededStocksCommand neededStocksCommand =
+        new();
+
+    private readonly InventoryService inventoryService =
+        new();
 
     public string Execute(string arguments)
     {
@@ -18,67 +20,34 @@ public class VerifyCommand : ICommand
             return "ERROR VERIFY requires an order";
         }
 
-        string validationError = neededStocksCommand.ValidateArguments(arguments);
+        string validationError =
+            neededStocksCommand.ValidateArguments(arguments);
 
         if (!string.IsNullOrEmpty(validationError))
         {
             return validationError;
         }
 
-        Dictionary<string, int>? neededStock = neededStocksCommand.GetNeededStocks(arguments);
+        Dictionary<string, int>? neededStock =
+            neededStocksCommand.GetNeededStocks(arguments);
 
         if (neededStock == null)
         {
             return "ERROR Unable to calculate needed stock";
         }
 
-        StockData? stock = LoadStock();
+        InventoryAvailabilityResult availabilityResult =
+            inventoryService.CheckPieceAvailability(
+                neededStock
+            );
 
-        if (stock == null)
+        if (!availabilityResult.IsSuccess)
         {
-            return "ERROR Unable to read stock data";
+            return availabilityResult.Error;
         }
 
-        foreach (var neededItem in neededStock)
-        {
-            string itemName = neededItem.Key;
-            int neededQuantity = neededItem.Value;
-
-            int availableQuantity = GetAvailableQuantity(itemName, stock);
-
-            if (availableQuantity < neededQuantity)
-            {
-                return "UNAVAILABLE";
-            }
-        }
-
-        return "AVAILABLE";
-    }
-
-    private StockData? LoadStock()
-    {
-        if (!File.Exists(stockFilePath))
-        {
-            return null;
-        }
-
-        string json = File.ReadAllText(stockFilePath);
-
-        return JsonSerializer.Deserialize<StockData>(json);
-    }
-
-    private int GetAvailableQuantity(string itemName, StockData stock)
-    {
-        if (stock.Pieces.ContainsKey(itemName))
-        {
-            return stock.Pieces[itemName];
-        }
-
-        if (stock.Drones.ContainsKey(itemName))
-        {
-            return stock.Drones[itemName];
-        }
-
-        return 0;
+        return availabilityResult.IsAvailable
+            ? "AVAILABLE"
+            : "UNAVAILABLE";
     }
 }

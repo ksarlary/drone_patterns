@@ -1,6 +1,5 @@
-using System.Text.Json;
 using DronePatterns.Models;
-using DronePatterns.Utils;
+using DronePatterns.Services;
 
 namespace DronePatterns.Commands;
 
@@ -8,7 +7,8 @@ public class StocksCommand : ICommand
 {
     public string Name => "STOCKS";
 
-    private readonly string stockFilePath = DataPaths.Stocks;
+    private readonly InventoryService inventoryService =
+        new();
 
     public string Execute(string arguments)
     {
@@ -17,7 +17,7 @@ public class StocksCommand : ICommand
             return "ERROR STOCKS does not accept arguments";
         }
 
-        StockData? stock = LoadStock();
+        StockData? stock = inventoryService.GetStock();
 
         if (stock == null)
         {
@@ -28,31 +28,28 @@ public class StocksCommand : ICommand
 
         foreach (var drone in stock.Drones)
         {
-            lines.Add($"{drone.Value} {drone.Key}");
+            lines.Add(
+                $"{drone.Value} {drone.Key}"
+            );
         }
 
         foreach (var assembly in stock.Assemblies)
         {
-            lines.Add($"{assembly.Value} {assembly.Key}");
+            lines.Add(
+                $"{assembly.Value} {assembly.Key}"
+            );
         }
 
         foreach (var piece in stock.Pieces)
         {
-            lines.Add($"{piece.Value} {piece.Key}");
+            lines.Add(
+                $"{piece.Value} {piece.Key}"
+            );
         }
 
-        return string.Join(Environment.NewLine, lines);
-    }
-
-    private StockData? LoadStock()
-    {
-        if (!File.Exists(stockFilePath))
-        {
-            return null;
-        }
-
-        string json = File.ReadAllText(stockFilePath);
-
-        return JsonSerializer.Deserialize<StockData>(json);
+        return string.Join(
+            Environment.NewLine,
+            lines
+        );
     }
 }

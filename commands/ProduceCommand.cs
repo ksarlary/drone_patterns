@@ -1,7 +1,6 @@
-using System.Text.Json;
-using DronePatterns.Utils;
 using DronePatterns.Models;
 using DronePatterns.Parsing;
+using DronePatterns.Services;
 
 namespace DronePatterns.Commands;
 
@@ -9,7 +8,8 @@ public class ProduceCommand : ICommand
 {
     public string Name => "PRODUCE";
 
-    private readonly string _stockFilePath = DataPaths.Stocks;
+    private readonly InventoryService inventoryService =
+        new();
 
     private readonly VerifyCommand verifyCommand = new();
     private readonly NeededStocksCommand neededStocksCommand = new();
@@ -53,63 +53,19 @@ public class ProduceCommand : ICommand
         {
             return "ERROR Unable to calculate needed stock";
         }
+        
+        InventoryOperationResult productionResult =
+            inventoryService.Produce(
+                neededStock,
+                order,
+                $"PRODUCE {arguments}"
+            );
 
-        StockData? stock = LoadStock();
-
-        if (stock == null)
+        if (!productionResult.IsSuccess)
         {
-            return "ERROR Unable to read stock data";
+            return productionResult.Error;
         }
-
-        foreach (var neededItem in neededStock)
-        {
-            string itemName = neededItem.Key;
-            int quantity = neededItem.Value;
-
-            stock.Pieces[itemName] -= quantity;
-        }
-
-        foreach (var producedDrone in order)
-        {
-            string droneName = producedDrone.Key;
-            int quantity = producedDrone.Value;
-
-            if (stock.Drones.ContainsKey(droneName))
-            {
-                stock.Drones[droneName] += quantity;
-            }
-            else
-            {
-                stock.Drones.Add(droneName, quantity);
-            }
-        }
-
-        SaveStock(stock);
 
         return "STOCK_UPDATED";
-    }
-
-    private StockData? LoadStock()
-    {
-        if (!File.Exists(_stockFilePath))
-        {
-            return null;
-        }
-
-        string json = File.ReadAllText(_stockFilePath);
-
-        return JsonSerializer.Deserialize<StockData>(json);
-    }
-
-    private void SaveStock(StockData stock)
-    {
-        JsonSerializerOptions options = new()
-        {
-            WriteIndented = true
-        };
-
-        string json = JsonSerializer.Serialize(stock, options);
-
-        File.WriteAllText(_stockFilePath, json);
     }
 }

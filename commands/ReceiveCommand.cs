@@ -2,6 +2,7 @@ using System.Text.Json;
 using DronePatterns.Models;
 using DronePatterns.Parsing;
 using DronePatterns.Utils;
+using DronePatterns.Services;
 
 namespace DronePatterns.Commands;
 
@@ -9,8 +10,8 @@ public class ReceiveCommand : ICommand
 {
     public string Name => "RECEIVE";
 
-    private readonly string stockFilePath =
-        DataPaths.Stocks;
+    private readonly InventoryService inventoryService =
+        new();
 
     private readonly string pieceCatalogFilePath =
         DataPaths.PieceCatalog;
@@ -36,7 +37,7 @@ public class ReceiveCommand : ICommand
             return parseResult.Error;
         }
 
-        StockData? stock = LoadStock();
+        StockData? stock = inventoryService.GetStock();
 
         if (stock == null)
         {
@@ -86,18 +87,16 @@ public class ReceiveCommand : ICommand
             );
         }
 
-        foreach (
-            ResolvedStockItem resolvedItem
-            in resolvedItems
-        )
-        {
-            AddToStock(
-                stock,
-                resolvedItem
+        InventoryOperationResult receiveResult =
+            inventoryService.Receive(
+                resolvedItems,
+                $"RECEIVE {arguments}"
             );
-        }
 
-        SaveStock(stock);
+        if (!receiveResult.IsSuccess)
+        {
+            return receiveResult.Error;
+        }
 
         return "STOCK_UPDATED";
     }
@@ -298,55 +297,6 @@ public class ReceiveCommand : ICommand
             };
     }
 
-    private static void AddToStock(
-        StockData stock,
-        ResolvedStockItem item
-    )
-    {
-        Dictionary<string, int> targetStock =
-            item.Type switch
-            {
-                StockItemType.Piece =>
-                    stock.Pieces,
-
-                StockItemType.Assembly =>
-                    stock.Assemblies,
-
-                StockItemType.Drone =>
-                    stock.Drones,
-
-                _ => throw new ArgumentOutOfRangeException()
-            };
-
-        if (targetStock.ContainsKey(item.Name))
-        {
-            targetStock[item.Name] += item.Quantity;
-        }
-        else
-        {
-            targetStock.Add(
-                item.Name,
-                item.Quantity
-            );
-        }
-    }
-
-    private StockData? LoadStock()
-    {
-        if (!File.Exists(stockFilePath))
-        {
-            return null;
-        }
-
-        string json = File.ReadAllText(
-            stockFilePath
-        );
-
-        return JsonSerializer.Deserialize<StockData>(
-            json
-        );
-    }
-
     private PieceCatalogData? LoadPieceCatalog()
     {
         if (!File.Exists(pieceCatalogFilePath))
@@ -375,24 +325,6 @@ public class ReceiveCommand : ICommand
         );
 
         return JsonSerializer.Deserialize<DroneCatalogData>(
-            json
-        );
-    }
-
-    private void SaveStock(StockData stock)
-    {
-        JsonSerializerOptions options = new()
-        {
-            WriteIndented = true
-        };
-
-        string json = JsonSerializer.Serialize(
-            stock,
-            options
-        );
-
-        File.WriteAllText(
-            stockFilePath,
             json
         );
     }
