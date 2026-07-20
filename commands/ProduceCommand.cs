@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DronePatterns.Utils;
 using DronePatterns.Models;
+using DronePatterns.Parsing;
 
 namespace DronePatterns.Commands;
 
@@ -12,6 +13,9 @@ public class ProduceCommand : ICommand
 
     private readonly VerifyCommand verifyCommand = new();
     private readonly NeededStocksCommand neededStocksCommand = new();
+    
+    private readonly IQuantityListParser quantityListParser =
+        new QuantityListParser();
 
     public string Execute(string arguments)
     {
@@ -32,12 +36,16 @@ public class ProduceCommand : ICommand
             return "ERROR Not enough stock";
         }
 
-        Dictionary<string, int>? order = ParseOrder(arguments);
+        QuantityListParseResult parseResult =
+            quantityListParser.Parse(arguments);
 
-        if (order == null)
+        if (!parseResult.IsSuccess)
         {
-            return "ERROR Invalid order format";
+            return parseResult.Error;
         }
+
+        Dictionary<string, int> order =
+            parseResult.Items;
 
         Dictionary<string, int>? neededStock = neededStocksCommand.GetNeededStocks(arguments);
 
@@ -79,45 +87,6 @@ public class ProduceCommand : ICommand
         SaveStock(stock);
 
         return "STOCK_UPDATED";
-    }
-
-    private Dictionary<string, int>? ParseOrder(string arguments)
-    {
-        Dictionary<string, int> order = new();
-
-        string[] orderParts = arguments.Split(',', StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (string orderPart in orderParts)
-        {
-            string cleanedPart = orderPart.Trim();
-
-            string[] elements = cleanedPart.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            if (elements.Length != 2)
-            {
-                return null;
-            }
-
-            bool quantityIsValid = int.TryParse(elements[0], out int quantity);
-
-            if (!quantityIsValid)
-            {
-                return null;
-            }
-
-            string droneName = elements[1];
-
-            if (order.ContainsKey(droneName))
-            {
-                order[droneName] += quantity;
-            }
-            else
-            {
-                order.Add(droneName, quantity);
-            }
-        }
-
-        return order;
     }
 
     private StockData? LoadStock()

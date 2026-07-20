@@ -2,6 +2,7 @@ using System.Text.Json;
 using DronePatterns.Commands.internal_commands;
 using DronePatterns.Models;
 using DronePatterns.Utils;
+using DronePatterns.Parsing;
 
 namespace DronePatterns.Commands;
 
@@ -15,6 +16,9 @@ public class InstructionsCommand : ICommand
     private readonly GetOutStockCommand getOutStockCommand = new();
     private readonly InstallCommand installCommand = new();
     private readonly AssembleCommand assembleCommand = new();
+    
+    private readonly IQuantityListParser quantityListParser =
+        new QuantityListParser();
 
     public string Execute(string arguments)
     {
@@ -30,12 +34,16 @@ public class InstructionsCommand : ICommand
             return "ERROR Unable to read drone catalog";
         }
 
-        Dictionary<string, int>? order = ParseOrder(arguments);
+        QuantityListParseResult parseResult =
+            quantityListParser.Parse(arguments);
 
-        if (order == null)
+        if (!parseResult.IsSuccess)
         {
-            return "ERROR Invalid order format";
+            return parseResult.Error;
         }
+
+        Dictionary<string, int> order =
+            parseResult.Items;
 
         string validationError = ValidateOrder(
             order,
@@ -245,59 +253,6 @@ public class InstructionsCommand : ICommand
         return JsonSerializer.Deserialize<DroneCatalogData>(
             json
         );
-    }
-
-    private static Dictionary<string, int>? ParseOrder(
-        string arguments
-    )
-    {
-        Dictionary<string, int> order = new();
-
-        string[] orderParts = arguments.Split(
-            ',',
-            StringSplitOptions.RemoveEmptyEntries
-        );
-
-        foreach (string orderPart in orderParts)
-        {
-            string cleanedPart = orderPart.Trim();
-
-            string[] elements = cleanedPart.Split(
-                ' ',
-                StringSplitOptions.RemoveEmptyEntries
-            );
-
-            if (elements.Length != 2)
-            {
-                return null;
-            }
-
-            bool quantityIsValid = int.TryParse(
-                elements[0],
-                out int quantity
-            );
-
-            if (!quantityIsValid)
-            {
-                return null;
-            }
-
-            string droneName = elements[1];
-
-            if (order.ContainsKey(droneName))
-            {
-                order[droneName] += quantity;
-            }
-            else
-            {
-                order.Add(
-                    droneName,
-                    quantity
-                );
-            }
-        }
-
-        return order;
     }
 
     private static string ValidateOrder(

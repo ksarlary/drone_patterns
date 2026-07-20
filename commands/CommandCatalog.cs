@@ -13,7 +13,8 @@ public class CommandCatalog
             new InstructionsCommand(),
             new VerifyCommand(),
             new ProduceCommand(),
-            new AddTemplateCommand()
+            new AddTemplateCommand(),
+            new ReceiveCommand()
         };
 
         commands = commandList.ToDictionary(

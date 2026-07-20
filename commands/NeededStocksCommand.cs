@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DronePatterns.Models;
 using DronePatterns.Utils;
+using DronePatterns.Parsing;
 
 namespace DronePatterns.Commands;
 
@@ -10,6 +11,9 @@ public class NeededStocksCommand : ICommand
     public string Name => "NEEDED_STOCKS";
     private readonly string catalogFilePath = DataPaths.DroneCatalog;
 
+    private readonly IQuantityListParser quantityListParser =
+        new QuantityListParser();
+    
     public string Execute(string arguments)
     {
         if (string.IsNullOrWhiteSpace(arguments))
@@ -24,12 +28,16 @@ public class NeededStocksCommand : ICommand
             return "ERROR Unable to read drone catalog";
         }
 
-        Dictionary<string, int>? order = ParseOrder(arguments);
+        QuantityListParseResult parseResult =
+            quantityListParser.Parse(arguments);
 
-        if (order == null)
+        if (!parseResult.IsSuccess)
         {
-            return "ERROR Invalid order format";
+            return parseResult.Error;
         }
+
+        Dictionary<string, int> order =
+            parseResult.Items;
 
         string validationError = ValidateOrder(order, catalog);
 
@@ -80,12 +88,16 @@ public class NeededStocksCommand : ICommand
             return null;
         }
 
-        Dictionary<string, int>? order = ParseOrder(arguments);
+        QuantityListParseResult parseResult =
+            quantityListParser.Parse(arguments);
 
-        if (order == null)
+        if (!parseResult.IsSuccess)
         {
             return null;
         }
+
+        Dictionary<string, int> order =
+            parseResult.Items;
 
         string validationError = ValidateOrder(order, catalog);
 
@@ -111,12 +123,16 @@ public class NeededStocksCommand : ICommand
             return "ERROR Unable to read drone catalog";
         }
 
-        Dictionary<string, int>? order = ParseOrder(arguments);
+        QuantityListParseResult parseResult =
+            quantityListParser.Parse(arguments);
 
-        if (order == null)
+        if (!parseResult.IsSuccess)
         {
-            return "ERROR Invalid order format";
+            return parseResult.Error;
         }
+
+        Dictionary<string, int> order =
+            parseResult.Items;
 
         return ValidateOrder(order, catalog);
     }
@@ -131,45 +147,6 @@ public class NeededStocksCommand : ICommand
         string json = File.ReadAllText(catalogFilePath);
 
         return JsonSerializer.Deserialize<DroneCatalogData>(json);
-    }
-
-    private Dictionary<string, int>? ParseOrder(string arguments)
-    {
-        Dictionary<string, int> order = new();
-
-        string[] orderParts = arguments.Split(',', StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (string orderPart in orderParts)
-        {
-            string cleanedPart = orderPart.Trim();
-
-            string[] elements = cleanedPart.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            if (elements.Length != 2)
-            {
-                return null;
-            }
-
-            bool quantityIsValid = int.TryParse(elements[0], out int quantity);
-
-            if (!quantityIsValid)
-            {
-                return null;
-            }
-
-            string droneName = elements[1];
-
-            if (order.ContainsKey(droneName))
-            {
-                order[droneName] += quantity;
-            }
-            else
-            {
-                order.Add(droneName, quantity);
-            }
-        }
-
-        return order;
     }
 
     private string ValidateOrder(Dictionary<string, int> order, DroneCatalogData catalog)

@@ -1,22 +1,24 @@
 {
   "Drones": {
-    "DXF-1": 0,
+    "DXF-1": 1,
     "RDL-1": 0,
     "WDS-1": 0,
     "DYM-1": 0,
     "HYBRID-1": 1
   },
-  "Assemblies": {},
+  "Assemblies": {
+    "[Generator_GF1, Hull_HF1]": 5
+  },
   "Pieces": {
     "Hull_HG1": 9,
-    "Hull_HF1": 10,
+    "Hull_HF1": 20,
     "Hull_HS1": 10,
     "Core_CG1": 9,
     "Core_C3D1": 10,
     "Generator_GG1": 8,
-    "Generator_GF1": 10,
+    "Generator_GF1": 12,
     "Generator_GS1": 10,
-    "Move_MF1": 10,
+    "Move_MF1": 13,
     "Move_ML1": 9,
     "Move_MS1": 10,
     "Move_MM1": 9,
