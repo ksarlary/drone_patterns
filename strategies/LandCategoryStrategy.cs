@@ -11,17 +11,21 @@ public class LandCategoryStrategy : ICategoryStrategy
         Dictionary<string, PieceDefinition> pieces
     )
     {
-        return HasTag(pieces, drone.Move, "L")
-            && HasTag(pieces, drone.System, "2D");
+        bool hasLandMovementModule = drone.MovementModules.Any(
+            movementModule => HasTag(pieces, movementModule, "L")
+        );
+
+        return hasLandMovementModule
+               && HasTag(pieces, drone.System, "2D");
     }
 
-    private bool HasTag(
+    private static bool HasTag(
         Dictionary<string, PieceDefinition> pieces,
         string pieceName,
         string tag
     )
     {
-        return pieces.ContainsKey(pieceName)
-            && pieces[pieceName].Tags.Contains(tag);
+        return pieces.TryGetValue(pieceName, out PieceDefinition? piece)
+               && piece.Tags.Contains(tag);
     }
 }

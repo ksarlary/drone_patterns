@@ -1,10 +1,12 @@
 using System.Text.Json;
+using DronePatterns.Utils;
+using DronePatterns.Models;
 
 namespace DronePatterns.Commands.internal_commands;
 
 public class GetOutStockCommand
 {
-    private readonly string stockFilePath = "data/stocks.json";
+    private readonly string stockFilePath = DataPaths.Stocks;
 
     public string Execute(int quantity, string itemName, bool displayOnly = true)
     {
@@ -84,10 +86,5 @@ public class GetOutStockCommand
 
         return true;
     }
-
-    private class StockData
-    {
-        public Dictionary<string, int> Drones { get; set; } = new();
-        public Dictionary<string, int> Pieces { get; set; } = new();
-    }
+   
 }

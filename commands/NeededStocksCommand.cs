@@ -1,4 +1,6 @@
 using System.Text.Json;
+using DronePatterns.Models;
+using DronePatterns.Utils;
 
 namespace DronePatterns.Commands;
 
@@ -6,7 +8,7 @@ public class NeededStocksCommand : ICommand
 
 {
     public string Name => "NEEDED_STOCKS";
-    private readonly string catalogFilePath = "Data/drone_catalog.json";
+    private readonly string catalogFilePath = DataPaths.DroneCatalog;
 
     public string Execute(string arguments)
     {
@@ -220,18 +222,55 @@ public class NeededStocksCommand : ICommand
     private Dictionary<string, int> CalculateNeededStockForDrone(
         string droneName,
         int quantity,
-        DroneCatalogData catalog)
+        DroneCatalogData catalog
+    )
     {
         Dictionary<string, int> neededStock = new();
-
+    
         DroneDefinition drone = catalog.Drones[droneName];
-
-        AddNeededItem(neededStock, drone.Hull, quantity);
-        AddNeededItem(neededStock, drone.Core, quantity);
-        AddNeededItem(neededStock, drone.Generator, quantity);
-        AddNeededItem(neededStock, drone.Move, quantity);
-        AddNeededItem(neededStock, drone.Processor, quantity);
-
+    
+        AddNeededItem(
+            neededStock,
+            drone.Hull,
+            quantity
+        );
+    
+        AddNeededItem(
+            neededStock,
+            drone.Core,
+            quantity
+        );
+    
+        AddNeededItem(
+            neededStock,
+            drone.System,
+            quantity
+        );
+    
+        foreach (string generator in drone.Generators)
+        {
+            AddNeededItem(
+                neededStock,
+                generator,
+                quantity
+            );
+        }
+    
+        foreach (string movementModule in drone.MovementModules)
+        {
+            AddNeededItem(
+                neededStock,
+                movementModule,
+                quantity
+            );
+        }
+    
+        AddNeededItem(
+            neededStock,
+            drone.Processor,
+            quantity
+        );
+    
         return neededStock;
     }
 
@@ -245,20 +284,5 @@ public class NeededStocksCommand : ICommand
         {
             neededStock.Add(itemName, quantity);
         }
-    }
-
-    private class DroneCatalogData
-    {
-        public Dictionary<string, DroneDefinition> Drones { get; set; } = new();
-    }
-
-    private class DroneDefinition
-    {
-        public string Hull { get; set; } = "";
-        public string Core { get; set; } = "";
-        public string System { get; set; } = "";
-        public string Generator { get; set; } = "";
-        public string Move { get; set; } = "";
-        public string Processor { get; set; } = "";
     }
 }

@@ -4,32 +4,62 @@
       "Hull": "Hull_HF1",
       "Core": "Core_C3D1",
       "System": "System_S3D1",
-      "Generator": "Generator_GF1",
-      "Move": "Move_MF1",
+      "Generators": [
+        "Generator_GF1"
+      ],
+      "MovementModules": [
+        "Move_MF1"
+      ],
       "Processor": "Processor_P3D1"
     },
     "RDL-1": {
       "Hull": "Hull_HG1",
       "Core": "Core_CG1",
       "System": "System_SG1",
-      "Generator": "Generator_GG1",
-      "Move": "Move_ML1",
+      "Generators": [
+        "Generator_GG1"
+      ],
+      "MovementModules": [
+        "Move_ML1"
+      ],
       "Processor": "Processor_PG1"
     },
     "WDS-1": {
       "Hull": "Hull_HS1",
       "Core": "Core_C3D1",
       "System": "System_S3D1",
-      "Generator": "Generator_GS1",
-      "Move": "Move_MS1",
+      "Generators": [
+        "Generator_GS1"
+      ],
+      "MovementModules": [
+        "Move_MS1"
+      ],
       "Processor": "Processor_P3D1"
     },
     "DYM-1": {
       "Hull": "Hull_HG1",
       "Core": "Core_CG1",
       "System": "System_SG1",
-      "Generator": "Generator_GG1",
-      "Move": "Move_MM1",
+      "Generators": [
+        "Generator_GG1"
+      ],
+      "MovementModules": [
+        "Move_MM1"
+      ],
+      "Processor": "Processor_PG1"
+    },
+    "HYBRID-1": {
+      "Hull": "Hull_HG1",
+      "Core": "Core_CG1",
+      "System": "System_SG1",
+      "Generators": [
+        "Generator_GG1",
+        "Generator_GG1"
+      ],
+      "MovementModules": [
+        "Move_ML1",
+        "Move_MM1"
+      ],
       "Processor": "Processor_PG1"
     }
   }

@@ -1,9 +1,7 @@
-﻿namespace DronePatterns.Models;
+namespace DronePatterns.Models;
 
-public class DroneTemplate
+public class DroneDefinition
 {
-    public string Name { get; set; } = "";
-
     public string Hull { get; set; } = "";
 
     public string Core { get; set; } = "";

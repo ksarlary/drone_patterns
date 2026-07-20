@@ -11,17 +11,21 @@ public class AerialCategoryStrategy : ICategoryStrategy
         Dictionary<string, PieceDefinition> pieces
     )
     {
-        return HasTag(pieces, drone.Move, "F")
-            && HasTag(pieces, drone.System, "3D");
+        bool hasFlyingMovementModule = drone.MovementModules.Any(
+            movementModule => HasTag(pieces, movementModule, "F")
+        );
+
+        return hasFlyingMovementModule
+               && HasTag(pieces, drone.System, "3D");
     }
 
-    private bool HasTag(
+    private static bool HasTag(
         Dictionary<string, PieceDefinition> pieces,
         string pieceName,
         string tag
     )
     {
-        return pieces.ContainsKey(pieceName)
-            && pieces[pieceName].Tags.Contains(tag);
+        return pieces.TryGetValue(pieceName, out PieceDefinition? piece)
+               && piece.Tags.Contains(tag);
     }
 }

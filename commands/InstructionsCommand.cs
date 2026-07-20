@@ -1,13 +1,16 @@
 using System.Text.Json;
 using DronePatterns.Commands.internal_commands;
+using DronePatterns.Models;
+using DronePatterns.Utils;
 
 namespace DronePatterns.Commands;
 
 public class InstructionsCommand : ICommand
 {
-
     public string Name => "INSTRUCTIONS";
-    private readonly string _catalogFilePath = "data/drone_catalog.json";
+
+    private readonly string catalogFilePath =
+        DataPaths.DroneCatalog;
 
     private readonly GetOutStockCommand getOutStockCommand = new();
     private readonly InstallCommand installCommand = new();
@@ -34,7 +37,10 @@ public class InstructionsCommand : ICommand
             return "ERROR Invalid order format";
         }
 
-        string validationError = ValidateOrder(order, catalog);
+        string validationError = ValidateOrder(
+            order,
+            catalog
+        );
 
         if (!string.IsNullOrEmpty(validationError))
         {
@@ -48,76 +54,228 @@ public class InstructionsCommand : ICommand
             string droneName = orderItem.Key;
             int quantity = orderItem.Value;
 
-            for (int i = 0; i < quantity; i++)
+            for (int index = 0; index < quantity; index++)
             {
-                DroneDefinition drone = catalog.Drones[droneName];
+                DroneDefinition drone =
+                    catalog.Drones[droneName];
 
-                AddInstructionsForOneDrone(lines, droneName, drone);
+                AddInstructionsForOneDrone(
+                    lines,
+                    droneName,
+                    drone
+                );
             }
         }
 
-        return string.Join(Environment.NewLine, lines);
+        return string.Join(
+            Environment.NewLine,
+            lines
+        );
     }
 
     private void AddInstructionsForOneDrone(
         List<string> lines,
         string droneName,
-        DroneDefinition drone)
+        DroneDefinition drone
+    )
     {
         lines.Add($"PRODUCING {droneName}");
 
-        lines.Add(getOutStockCommand.Execute(1, drone.Hull, displayOnly: true));
-        lines.Add(getOutStockCommand.Execute(1, drone.Core, displayOnly: true));
-        lines.Add(getOutStockCommand.Execute(1, drone.Generator, displayOnly: true));
-        lines.Add(getOutStockCommand.Execute(1, drone.Move, displayOnly: true));
-        lines.Add(getOutStockCommand.Execute(1, drone.Processor, displayOnly: true));
+        AddStockRemovalInstructions(
+            lines,
+            drone
+        );
 
-        lines.Add(installCommand.Execute(drone.System, drone.Core, displayOnly: true));
+        lines.Add(
+            installCommand.Execute(
+                drone.System,
+                drone.Core,
+                displayOnly: true
+            )
+        );
 
-        string installedCore = installCommand.GetInstalledPieceName(drone.System, drone.Core);
+        string installedCore =
+            installCommand.GetInstalledPieceName(
+                drone.System,
+                drone.Core
+            );
 
-        lines.Add(assembleCommand.Execute("TMP1", drone.Hull, drone.Generator));
-        lines.Add(assembleCommand.Execute("TMP2", "TMP1", drone.Move));
+        string currentAssembly = drone.Hull;
+        int temporaryAssemblyNumber = 1;
+        
+        foreach (string generator in drone.Generators)
+        {
+            currentAssembly = AddAssemblyStep(
+                lines,
+                currentAssembly,
+                generator,
+                temporaryAssemblyNumber
+            );
 
-        lines.Add(assembleCommand.Execute("", "TMP2", installedCore));
+            temporaryAssemblyNumber++;
+        }
+        
+        currentAssembly = AddAssemblyStep(
+            lines,
+            currentAssembly,
+            installedCore,
+            temporaryAssemblyNumber
+        );
 
-        string unnamedAssembly = assembleCommand.GetUnnamedAssemblyName("TMP2", installedCore);
+        temporaryAssemblyNumber++;
 
-        lines.Add(assembleCommand.Execute("", unnamedAssembly, drone.Processor));
+        foreach (
+            string movementModule in drone.MovementModules
+        )
+        {
+            currentAssembly = AddAssemblyStep(
+                lines,
+                currentAssembly,
+                movementModule,
+                temporaryAssemblyNumber
+            );
+
+            temporaryAssemblyNumber++;
+        }
+
+        AddAssemblyStep(
+            lines,
+            currentAssembly,
+            drone.Processor,
+            temporaryAssemblyNumber
+        );
 
         lines.Add($"FINISHED {droneName}");
     }
 
+    private void AddStockRemovalInstructions(
+        List<string> lines,
+        DroneDefinition drone
+    )
+    {
+        lines.Add(
+            getOutStockCommand.Execute(
+                1,
+                drone.Hull,
+                displayOnly: true
+            )
+        );
+
+        lines.Add(
+            getOutStockCommand.Execute(
+                1,
+                drone.Core,
+                displayOnly: true
+            )
+        );
+
+        lines.Add(
+            getOutStockCommand.Execute(
+                1,
+                drone.System,
+                displayOnly: true
+            )
+        );
+
+        foreach (string generator in drone.Generators)
+        {
+            lines.Add(
+                getOutStockCommand.Execute(
+                    1,
+                    generator,
+                    displayOnly: true
+                )
+            );
+        }
+
+        foreach (
+            string movementModule in drone.MovementModules
+        )
+        {
+            lines.Add(
+                getOutStockCommand.Execute(
+                    1,
+                    movementModule,
+                    displayOnly: true
+                )
+            );
+        }
+
+        lines.Add(
+            getOutStockCommand.Execute(
+                1,
+                drone.Processor,
+                displayOnly: true
+            )
+        );
+    }
+
+    private string AddAssemblyStep(
+        List<string> lines,
+        string currentAssembly,
+        string nextPiece,
+        int temporaryAssemblyNumber
+    )
+    {
+        string resultName =
+            $"TMP{temporaryAssemblyNumber}";
+
+        lines.Add(
+            assembleCommand.Execute(
+                resultName,
+                currentAssembly,
+                nextPiece
+            )
+        );
+
+        return resultName;
+    }
+
     private DroneCatalogData? LoadCatalog()
     {
-        if (!File.Exists(_catalogFilePath))
+        if (!File.Exists(catalogFilePath))
         {
             return null;
         }
 
-        string json = File.ReadAllText(_catalogFilePath);
+        string json = File.ReadAllText(
+            catalogFilePath
+        );
 
-        return JsonSerializer.Deserialize<DroneCatalogData>(json);
+        return JsonSerializer.Deserialize<DroneCatalogData>(
+            json
+        );
     }
 
-    private Dictionary<string, int>? ParseOrder(string arguments)
+    private static Dictionary<string, int>? ParseOrder(
+        string arguments
+    )
     {
         Dictionary<string, int> order = new();
 
-        string[] orderParts = arguments.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        string[] orderParts = arguments.Split(
+            ',',
+            StringSplitOptions.RemoveEmptyEntries
+        );
 
         foreach (string orderPart in orderParts)
         {
             string cleanedPart = orderPart.Trim();
 
-            string[] elements = cleanedPart.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            string[] elements = cleanedPart.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries
+            );
 
             if (elements.Length != 2)
             {
                 return null;
             }
 
-            bool quantityIsValid = int.TryParse(elements[0], out int quantity);
+            bool quantityIsValid = int.TryParse(
+                elements[0],
+                out int quantity
+            );
 
             if (!quantityIsValid)
             {
@@ -132,14 +290,20 @@ public class InstructionsCommand : ICommand
             }
             else
             {
-                order.Add(droneName, quantity);
+                order.Add(
+                    droneName,
+                    quantity
+                );
             }
         }
 
         return order;
     }
 
-    private string ValidateOrder(Dictionary<string, int> order, DroneCatalogData catalog)
+    private static string ValidateOrder(
+        Dictionary<string, int> order,
+        DroneCatalogData catalog
+    )
     {
         foreach (var item in order)
         {
@@ -148,30 +312,17 @@ public class InstructionsCommand : ICommand
 
             if (quantity <= 0)
             {
-                return $"ERROR Invalid quantity for `{droneName}`";
+                return
+                    $"ERROR Invalid quantity for `{droneName}`";
             }
 
             if (!catalog.Drones.ContainsKey(droneName))
             {
-                return $"ERROR `{droneName}` is not a recognized drone";
+                return
+                    $"ERROR `{droneName}` is not a recognized drone";
             }
         }
 
         return "";
-    }
-
-    private class DroneCatalogData
-    {
-        public Dictionary<string, DroneDefinition> Drones { get; set; } = new();
-    }
-
-    private class DroneDefinition
-    {
-        public string Hull { get; set; } = "";
-        public string Core { get; set; } = "";
-        public string System { get; set; } = "";
-        public string Generator { get; set; } = "";
-        public string Move { get; set; } = "";
-        public string Processor { get; set; } = "";
     }
 }

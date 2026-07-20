@@ -1,4 +1,6 @@
 using System.Text.Json;
+using DronePatterns.Utils;
+using DronePatterns.Models;
 
 namespace DronePatterns.Commands;
 
@@ -6,7 +8,7 @@ public class ProduceCommand : ICommand
 {
     public string Name => "PRODUCE";
 
-    private readonly string _stockFilePath = "data/stocks.json";
+    private readonly string _stockFilePath = DataPaths.Stocks;
 
     private readonly VerifyCommand verifyCommand = new();
     private readonly NeededStocksCommand neededStocksCommand = new();
@@ -140,11 +142,5 @@ public class ProduceCommand : ICommand
         string json = JsonSerializer.Serialize(stock, options);
 
         File.WriteAllText(_stockFilePath, json);
-    }
-
-    private class StockData
-    {
-        public Dictionary<string, int> Drones { get; set; } = new();
-        public Dictionary<string, int> Pieces { get; set; } = new();
     }
 }

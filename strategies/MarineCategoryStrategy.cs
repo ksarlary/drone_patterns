@@ -11,18 +11,22 @@ public class MarineCategoryStrategy : ICategoryStrategy
         Dictionary<string, PieceDefinition> pieces
     )
     {
+        bool hasMarineMovementModule = drone.MovementModules.Any(
+            movementModule => HasTag(pieces, movementModule, "M")
+        );
+
         return HasTag(pieces, drone.Hull, "S")
-            && HasTag(pieces, drone.System, "2D")
-            && HasTag(pieces, drone.Move, "M");
+            && hasMarineMovementModule
+            && HasTag(pieces, drone.System, "2D");
     }
 
-    private bool HasTag(
+    private static bool HasTag(
         Dictionary<string, PieceDefinition> pieces,
         string pieceName,
         string tag
     )
     {
-        return pieces.ContainsKey(pieceName)
-            && pieces[pieceName].Tags.Contains(tag);
+        return pieces.TryGetValue(pieceName, out PieceDefinition? piece)
+            && piece.Tags.Contains(tag);
     }
 }

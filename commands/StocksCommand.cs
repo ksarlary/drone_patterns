@@ -1,4 +1,6 @@
 using System.Text.Json;
+using DronePatterns.Models;
+using DronePatterns.Utils;
 
 namespace DronePatterns.Commands;
 
@@ -6,7 +8,7 @@ public class StocksCommand : ICommand
 {
     public string Name => "STOCKS";
 
-    private readonly string stockFilePath = "Data/stocks.json";
+    private readonly string stockFilePath = DataPaths.Stocks;
 
     public string Execute(string arguments)
     {
@@ -29,6 +31,11 @@ public class StocksCommand : ICommand
             lines.Add($"{drone.Value} {drone.Key}");
         }
 
+        foreach (var assembly in stock.Assemblies)
+        {
+            lines.Add($"{assembly.Value} {assembly.Key}");
+        }
+
         foreach (var piece in stock.Pieces)
         {
             lines.Add($"{piece.Value} {piece.Key}");
@@ -48,12 +55,4 @@ public class StocksCommand : ICommand
 
         return JsonSerializer.Deserialize<StockData>(json);
     }
-
-    private class StockData
-    {
-        public Dictionary<string, int> Drones { get; set; } = new();
-        public Dictionary<string, int> Pieces { get; set; } = new();
-    }
-
-
 }

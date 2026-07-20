@@ -11,19 +11,27 @@ public class SubmersibleCategoryStrategy : ICategoryStrategy
         Dictionary<string, PieceDefinition> pieces
     )
     {
+        bool allGeneratorsAreSubmersible = drone.Generators.All(
+            generator => HasTag(pieces, generator, "S")
+        );
+
+        bool allMovementModulesAreSubmersible = drone.MovementModules.All(
+            movementModule => HasTag(pieces, movementModule, "S")
+        );
+
         return HasTag(pieces, drone.Hull, "S")
-            && HasTag(pieces, drone.Generator, "S")
-            && HasTag(pieces, drone.Move, "S")
-            && HasTag(pieces, drone.System, "3D");
+               && allGeneratorsAreSubmersible
+               && allMovementModulesAreSubmersible
+               && HasTag(pieces, drone.System, "3D");
     }
 
-    private bool HasTag(
+    private static bool HasTag(
         Dictionary<string, PieceDefinition> pieces,
         string pieceName,
         string tag
     )
     {
-        return pieces.ContainsKey(pieceName)
-            && pieces[pieceName].Tags.Contains(tag);
+        return pieces.TryGetValue(pieceName, out PieceDefinition? piece)
+               && piece.Tags.Contains(tag);
     }
 }
